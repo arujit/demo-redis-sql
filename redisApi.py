@@ -1,5 +1,5 @@
 import redis
-
+import yaml
 
 """
 Single threaded redis api for handeleing the db
@@ -8,12 +8,13 @@ hashmap for a user
 """
 
 class RedisApi(object):
-    def __init__(self,port,db_no):
-        self.host = 'localhost'
-        self.port = port
-        #print "hello RedisApi"
-        self.db = db_no
-        self.pool = redis.ConnectionPool(host = self.host,port = self.port,db = self.db )
+    def __init__(self):
+        print "hello RedisApi"
+        with open("sql_config.yaml","r") as configfile:
+            self.config_file = yaml.load(configfile)
+            
+        self.redis_config = self.config_file["redis"]
+        self.pool = redis.ConnectionPool(host=self.redis_config["host"],port=self.redis_config["port"],db = self.redis_config["db"])
         self.r = redis.Redis(connection_pool = self.pool)
         print "Welcome to Redis"
         

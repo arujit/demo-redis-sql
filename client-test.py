@@ -2,6 +2,7 @@ import socket
 import pickle
 import sys,os
 import time
+import yaml
 
 class Client:
     def __init__(self):
@@ -10,8 +11,12 @@ class Client:
 
     def connect(self):
         host = "127.0.0.1"
-        port = 10007
-        self.sock.connect((host,port))
+        port = 10014
+
+        with open("sql_config.yaml","r") as configfile:
+            self.config_file = yaml.load(configfile)
+        self.tcp_config = self.config_file["tcp"]
+        self.sock.connect((self.tcp_config["host"],self.tcp_config["port"]))
 
     def send(self,data):
         self.sock.send(data)
@@ -22,7 +27,7 @@ class Client:
 
         
 if __name__ == "__main__":
-    dict = {"Task": "ADD","user_name":"user-5","user_password":"password-5"}
+    dict = {"Task": "ADD","user_name":"user-7","user_password":"password-7"}
     cli = Client()
     cli.connect()
     cli.send(pickle.dumps(dict))
