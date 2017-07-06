@@ -27,6 +27,6 @@ class MysqlApi:
                      "(userId,userName,userPassword)"
                      "VALUES (NULL,%(user_name)s,%(user_password)s )"
                       )
-        self.cursor.execute(add_user,add_message)
+        self.cursor.execute(add_user,add_message["UserInfo"])
         self.connection.commit()
         return True

@@ -6,6 +6,7 @@ import pickle
 from redisApi import RedisApi
 import yaml
 from sqlApi import MysqlApi
+from threading import Thread
 
 """
 This is the basic server side python script for python coneection with Mysql db.
@@ -17,12 +18,11 @@ Basic idea - Let's take a socket server for considiration
 TO_D0 :
 -*- finish config
 -*- sql handel api
---- multi threading
+-*- multi threading
 --- Make code robust
 ///
 --- finish call backs and transactions
---- architecture handeling
-
+------ architecture handeling
 """
 
 class Communication:
@@ -60,14 +60,11 @@ class Db:
     
     def add_redis(self,message):
         self.token = message    
-        del self.token["Task"]
-        self.user_name = self.message["user_name"]
-        self.redis_api.create_user(self.user_name,self.token)
+        #del self.token["Task"]
+        self.user_name = self.message["UserInfo"]["user_name"]
+        self.redis_api.create_user(self.user_name,self.token["UserInfo"])
         
     def process(self):
-        #self.connection = self._sql_connect()
-        #print "connection established with sql !!!"
-        #self.cursor = self.connection.cursor()
         if self.message['Task'] == 'ADD':
             self.sql_resp = self.add_sql(self.message)
             if self.sql_resp == True:
@@ -76,15 +73,38 @@ class Db:
             self.redis_resp = self.add_redis(self.message)
         return self.resp
 
+
+class Messagehandler(Thread):
+    """
+    I want to establish multiple connection at a time... so message must be received here may be in another class
+    """
+    def __init__(self,client):
+        Thread.__init__(self)
+        self.client = client
+        self.client_pickle = self.client.recv(512)
+        self.message = pickle.loads(self.client_pickle)
+        print self.message
+        print "Message Received !!!"
+        
+    def run(self):
+        db = Db(self.message)
+        self.resp = db.process()
+        self.client.send(self.resp)
+        
+    
+        
 if __name__ == "__main__":
     """Main thread"""
     check_server = Communication()
+    threads = []
     while True:
         #print "true"
         client,address = check_server.server.accept()
         """message is a dictionary that has some attributes like what to do, username and password """ 
-        client_pickle = client.recv(512)
-        message = pickle.loads(client_pickle)
-        db = Db(message)
-        resp = db.process()
-        client.send(resp)
+        newthread =Messagehandler(client)
+        newthread.start()
+        threads.append(newthread)
+
+    for t in threads:
+        t.join()    
+        

@@ -7,7 +7,7 @@ mysql:
 
 tcp:
     host: 127.0.0.1
-    port: 10024
+    port: 10027
 
 redis:
      host : 127.0.0.1

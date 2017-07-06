@@ -27,10 +27,10 @@ class Client:
 
         
 if __name__ == "__main__":
-    dict = {"Task": "ADD","user_name":"user-7","user_password":"password-7"}
+    message = {"Task": "ADD","UserInfo":{"user_name":"user-9","user_password":"password-9"}}
     cli = Client()
     cli.connect()
-    cli.send(pickle.dumps(dict))
+    cli.send(pickle.dumps(message))
     print "Blah! Blah"
     #time.sleep(100)
     ack = cli.sock.recv(512)
