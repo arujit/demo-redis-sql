@@ -63,17 +63,29 @@ class Db:
         #del self.token["Task"]
         self.user_name = self.message["UserInfo"]["user_name"]
         self.redis_api.create_user(self.user_name,self.token["UserInfo"])
-        
-    def process(self):
-        if self.message['Task'] == 'ADD':
-            self.sql_resp = self.add_sql(self.message)
-            if self.sql_resp == True:
-                print "Added to sql Db"
-            self.resp = "Added!!!"
-            self.redis_resp = self.add_redis(self.message)
+
+    def process_handler(self):
+        if self.message["Task"] == "ADD":
+            try:
+                self.sql_resp = self.add_sql(self.message)
+                if self.sql_resp == True:
+                    print "Added to SQL db"
+            except :
+                print "trainsation failed !!! Don't append on redis "
+                self.resp = "Retry"
+            else:
+                self.redis_resp = self.add_redis(self.message)
+                self.resp = "Added"
+            finally:
+                pass
+
+        """
+        Idea is that when client gets a retry responce it will try to send the request
+        But still couldn't figure out the case where redis itself fails!!!
+        """
         return self.resp
-
-
+                
+        
 class Messagehandler(Thread):
     """
     I want to establish multiple connection at a time... so message must be received here may be in another class
@@ -88,7 +100,7 @@ class Messagehandler(Thread):
         
     def run(self):
         db = Db(self.message)
-        self.resp = db.process()
+        self.resp = db.process_handler()
         self.client.send(self.resp)
         
     
