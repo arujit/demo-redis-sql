@@ -1,6 +1,5 @@
 import socket
 import pickle
-import requests
 import sys,os
 import time
 import yaml
